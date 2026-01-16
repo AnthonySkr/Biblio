@@ -1,3 +1,7 @@
+import services.BookService;
+import services.UserService;
+import services.LoanService;
+
 import java.util.Scanner;
 
 public class Main {
@@ -9,105 +13,65 @@ public class Main {
         boolean running = true;
 
         while (running) {
-            afficherMenuPrincipal();
-            String choix = scanner.nextLine();
+            System.out.println("\n===== BIBLIOTHÈQUE =====");
+            System.out.println("1 - Livres");
+            System.out.println("2 - Utilisateurs");
+            System.out.println("3 - Emprunts");
+            System.out.println("0 - Quitter");
+            System.out.print("Choix : ");
 
-            switch (choix) {
-                case "1" -> menuLivres();
-                case "2" -> menuUtilisateurs();
-                case "3" -> menuEmprunts();
-                case "0" -> {
-                    System.out.println("Au revoir.");
-                    running = false;
-                }
+            switch (scanner.nextLine()) {
+                case "1" -> menuBooks();
+                case "2" -> menuUsers();
+                case "3" -> menuLoans();
+                case "0" -> running = false;
                 default -> System.out.println("Choix invalide.");
             }
         }
     }
 
-    private static void afficherMenuPrincipal() {
-        System.out.println("\n===== GESTIONNAIRE DE BIBLIOTHÈQUE =====");
-        System.out.println("1 - Gestion des livres");
-        System.out.println("2 - Gestion des utilisateurs");
-        System.out.println("3 - Emprunts / retours");
-        System.out.println("0 - Quitter");
-        System.out.print("Choix : ");
-    }
-
-    private static void menuLivres() {
-        boolean retour = false;
-
-        while (!retour) {
-            System.out.println("\n--- Gestion des livres ---");
-            System.out.println("a - Ajouter un livre");
-            System.out.println("m - Modifier un livre");
-            System.out.println("s - Supprimer un livre");
-            System.out.println("l - Lister les livres");
-            System.out.println("r - Rechercher un livre");
-            System.out.println("b - Retour");
-            System.out.print("Choix : ");
-
-            String choix = scanner.nextLine();
-
-            switch (choix) {
-                case "a" -> System.out.println("Ajout d’un livre (à implémenter)");
-                case "m" -> System.out.println("Modification d’un livre (à implémenter)");
-                case "s" -> System.out.println("Suppression d’un livre (à implémenter)");
-                case "l" -> System.out.println("Liste des livres (à implémenter)");
-                case "r" -> System.out.println("Recherche de livres (à implémenter)");
-                case "b" -> retour = true;
-                default -> System.out.println("Choix invalide.");
+    private static void menuBooks() {
+        System.out.println("\na - Ajouter | l - Lister | b - Retour");
+        switch (scanner.nextLine()) {
+            case "a" -> {
+                System.out.print("Titre : ");
+                String title = scanner.nextLine();
+                System.out.print("Auteur : ");
+                String author = scanner.nextLine();
+                System.out.print("Genre : ");
+                String genre = scanner.nextLine();
+                BookService.addBook(title, author, genre);
             }
+            case "l" -> BookService.listBooks();
         }
     }
 
-    private static void menuUtilisateurs() {
-        boolean retour = false;
-
-        while (!retour) {
-            System.out.println("\n--- Gestion des utilisateurs ---");
-            System.out.println("a - Ajouter un utilisateur");
-            System.out.println("m - Modifier un utilisateur");
-            System.out.println("s - Supprimer un utilisateur");
-            System.out.println("l - Lister les utilisateurs");
-            System.out.println("h - Historique des emprunts");
-            System.out.println("b - Retour");
-            System.out.print("Choix : ");
-
-            String choix = scanner.nextLine();
-
-            switch (choix) {
-                case "a" -> System.out.println("Ajout utilisateur (à implémenter)");
-                case "m" -> System.out.println("Modification utilisateur (à implémenter)");
-                case "s" -> System.out.println("Suppression utilisateur (à implémenter)");
-                case "l" -> System.out.println("Liste utilisateurs (à implémenter)");
-                case "h" -> System.out.println("Historique des emprunts (à implémenter)");
-                case "b" -> retour = true;
-                default -> System.out.println("Choix invalide.");
+    private static void menuUsers() {
+        System.out.println("\na - Ajouter | l - Lister | b - Retour");
+        switch (scanner.nextLine()) {
+            case "a" -> {
+                System.out.print("Nom : ");
+                UserService.addUser(scanner.nextLine());
             }
+            case "l" -> UserService.listUsers();
         }
     }
 
-    private static void menuEmprunts() {
-        boolean retour = false;
-
-        while (!retour) {
-            System.out.println("\n--- Emprunts / retours ---");
-            System.out.println("e - Emprunter un livre");
-            System.out.println("r - Retourner un livre");
-            System.out.println("l - Lister les emprunts");
-            System.out.println("b - Retour");
-            System.out.print("Choix : ");
-
-            String choix = scanner.nextLine();
-
-            switch (choix) {
-                case "e" -> System.out.println("Emprunt (à implémenter)");
-                case "r" -> System.out.println("Retour (à implémenter)");
-                case "l" -> System.out.println("Liste des emprunts (à implémenter)");
-                case "b" -> retour = true;
-                default -> System.out.println("Choix invalide.");
+    private static void menuLoans() {
+        System.out.println("\ne - Emprunter | r - Retourner | l - Lister");
+        switch (scanner.nextLine()) {
+            case "e" -> {
+                System.out.print("ID Livre : ");
+                int bookId = Integer.parseInt(scanner.nextLine());
+                System.out.print("ID Utilisateur : ");
+                int userId = Integer.parseInt(scanner.nextLine());
+                LoanService.borrowBook(bookId, userId);
             }
+            case "r" -> {
+                System.out.print("ID Livre : ");
+                LoanService.returnBook(Integer.parseInt(scanner.nextLine()));
+            }
+            case "l" -> LoanService.listLoans();
         }
     }
 }

@@ -7,7 +7,7 @@ public class Book {
     private String genre;
     private boolean isAvailable;
 
-    public Book(int id, String title, String author, String genre) {
+    public Book(int id, String title, String author, String genre, boolean b) {
         this.id = id;
         this.title = title;
         this.author = author;

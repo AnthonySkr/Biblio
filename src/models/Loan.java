@@ -17,6 +17,9 @@ public class Loan {
         this.returnDate = null;
     }
 
+    public Loan(int bookId, int userId) {
+    }
+
     // Getters
     public int getId() { return id; }
     public int getBookId() { return bookId; }
@@ -36,5 +39,8 @@ public class Loan {
         return String.format("[%d] Livre %d - Utilisateur %d - Emprunté le %s%s",
                 id, bookId, userId, loanDate,
                 isReturned() ? " - Retourné le " + returnDate : " - En cours");
+    }
+
+    public void returnBook() {
     }
 }
