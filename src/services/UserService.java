@@ -10,7 +10,7 @@ public class UserService {
     private static int nextId = 1;
 
     public static void addUser(String name) {
-        users.add(new User(nextId++, name));
+        users.add(new User(nextId++, name, name.toLowerCase().replaceAll(" ", ".") + "@example.com"));
         System.out.println("Utilisateur ajouté.");
     }
 

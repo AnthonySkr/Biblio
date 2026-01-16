@@ -15,11 +15,6 @@ public class Book {
         this.isAvailable = isAvailable;
     }
 
-    // Constructeur simplifié pour les nouveaux livres
-    public Book(int id, String title, String author, String genre) {
-        this(id, title, author, genre, true);
-    }
-
     // Getters
     public int getId() { return id; }
     public String getTitle() { return title; }
