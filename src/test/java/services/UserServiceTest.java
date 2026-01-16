@@ -1,16 +1,11 @@
-import org.junit.jupiter.api.BeforeEach;
+package services;
+
 import org.junit.jupiter.api.Test;
 import models.User;
-import services.UserService;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UserServiceTest {
-
-    @BeforeEach
-    void setUp() {
-        UserService.clearAll();
-    }
 
     @Test
     void addUser_shouldCreateUser() {

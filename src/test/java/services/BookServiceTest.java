@@ -1,16 +1,11 @@
-import org.junit.jupiter.api.BeforeEach;
+package services;
+
 import org.junit.jupiter.api.Test;
 import models.Book;
-import services.BookService;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class BookServiceTest {
-
-    @BeforeEach
-    void setUp() {
-        BookService.clearAll();
-    }
 
     @Test
     void addBook_shouldCreateBook() {

@@ -1,19 +1,9 @@
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import services.BookService;
-import services.UserService;
-import services.LoanService;
+package services;
 
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LoanServiceTest {
-
-    @BeforeEach
-    void setUp() {
-        BookService.clearAll();
-        UserService.clearAll();
-        LoanService.clearAll();
-    }
 
     @Test
     void borrowBook_shouldMarkBookUnavailable() {
@@ -30,10 +20,10 @@ public class LoanServiceTest {
         BookService.addBook("It", "King", "Horreur");
         UserService.addUser("Paul");
 
-        LoanService.borrowBook(1, 1);
-        LoanService.borrowBook(1, 1);
+        LoanService.borrowBook(2, 2);
+        LoanService.borrowBook(2, 2);
 
-        assertFalse(BookService.findById(1).isAvailable());
+        assertFalse(BookService.findById(2).isAvailable());
     }
 
     @Test
@@ -41,9 +31,9 @@ public class LoanServiceTest {
         BookService.addBook("Foundation", "Asimov", "SF");
         UserService.addUser("Clara");
 
-        LoanService.borrowBook(1, 1);
-        LoanService.returnBook(1);
+        LoanService.borrowBook(3, 3);
+        LoanService.returnBook(3);
 
-        assertTrue(BookService.findById(1).isAvailable());
+        assertTrue(BookService.findById(3).isAvailable());
     }
 }
