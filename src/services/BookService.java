@@ -1,49 +1,90 @@
 package services;
 
+import database.DatabaseManager;
 import models.Book;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.*;
 
 public class BookService {
 
-    private static final List<Book> books = new ArrayList<>();
-    private static int nextId = 1;
+    private static final DatabaseManager db = DatabaseManager.getInstance();
 
     public static void addBook(String title, String author, String genre) {
-        Book book = new Book(nextId++, title, author, genre, true);
-        books.add(book);
-        System.out.println("Livre ajouté.");
+        String sql = "INSERT INTO books (title, author, genre, is_available) VALUES (?, ?, ?, 1)";
+        try (PreparedStatement pstmt = db.getConnection().prepareStatement(sql)) {
+            pstmt.setString(1, title);
+            pstmt.setString(2, author);
+            pstmt.setString(3, genre);
+            pstmt.executeUpdate();
+            System.out.println("Livre ajouté.");
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de l'ajout du livre : " + e.getMessage());
+        }
     }
 
     public static void listBooks() {
-        if (books.isEmpty()) {
-            System.out.println("Aucun livre.");
-            return;
-        }
-        for (Book book : books) {
-            System.out.println(book);
+        String sql = "SELECT * FROM books";
+        try (Statement stmt = db.getConnection().createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            boolean hasBooks = false;
+            while (rs.next()) {
+                hasBooks = true;
+                Book book = new Book(
+                    rs.getInt("id"),
+                    rs.getString("title"),
+                    rs.getString("author"),
+                    rs.getString("genre"),
+                    rs.getInt("is_available") == 1
+                );
+                System.out.println(book);
+            }
+
+            if (!hasBooks) {
+                System.out.println("Aucun livre.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la récupération des livres : " + e.getMessage());
         }
     }
 
     public static Book findById(int id) {
-        for (Book book : books) {
-            if (book.getId() == id) {
-                return book;
+        String sql = "SELECT * FROM books WHERE id = ?";
+        try (PreparedStatement pstmt = db.getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return new Book(
+                    rs.getInt("id"),
+                    rs.getString("title"),
+                    rs.getString("author"),
+                    rs.getString("genre"),
+                    rs.getInt("is_available") == 1
+                );
             }
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la recherche du livre : " + e.getMessage());
         }
         return null;
     }
 
     public static void updateBook(int id, String title, String author, String genre) {
-        Book book = findById(id);
-        if (book == null) {
+        if (findById(id) == null) {
             System.out.println("Livre introuvable.");
             return;
         }
-        book.setTitle(title);
-        book.setAuthor(author);
-        book.setGenre(genre);
-        System.out.println("Livre modifié.");
+
+        String sql = "UPDATE books SET title = ?, author = ?, genre = ? WHERE id = ?";
+        try (PreparedStatement pstmt = db.getConnection().prepareStatement(sql)) {
+            pstmt.setString(1, title);
+            pstmt.setString(2, author);
+            pstmt.setString(3, genre);
+            pstmt.setInt(4, id);
+            pstmt.executeUpdate();
+            System.out.println("Livre modifié.");
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la modification du livre : " + e.getMessage());
+        }
     }
 
     public static void deleteBook(int id) {
@@ -56,97 +97,152 @@ public class BookService {
             System.out.println("Impossible de supprimer : le livre est actuellement emprunté.");
             return;
         }
-        books.remove(book);
-        System.out.println("Livre supprimé.");
+
+        String sql = "DELETE FROM books WHERE id = ?";
+        try (PreparedStatement pstmt = db.getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            pstmt.executeUpdate();
+            System.out.println("Livre supprimé.");
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la suppression du livre : " + e.getMessage());
+        }
     }
 
     public static void listAvailableBooks() {
-        List<Book> availableBooks = new ArrayList<>();
-        for (Book book : books) {
-            if (book.isAvailable()) {
-                availableBooks.add(book);
+        String sql = "SELECT * FROM books WHERE is_available = 1";
+        try (Statement stmt = db.getConnection().createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            boolean hasBooks = false;
+            System.out.println("=== Livres disponibles ===");
+            while (rs.next()) {
+                hasBooks = true;
+                Book book = new Book(
+                    rs.getInt("id"),
+                    rs.getString("title"),
+                    rs.getString("author"),
+                    rs.getString("genre"),
+                    true
+                );
+                System.out.println(book);
             }
-        }
-        if (availableBooks.isEmpty()) {
-            System.out.println("Aucun livre disponible.");
-            return;
-        }
-        System.out.println("=== Livres disponibles ===");
-        for (Book book : availableBooks) {
-            System.out.println(book);
+
+            if (!hasBooks) {
+                System.out.println("Aucun livre disponible.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la récupération des livres : " + e.getMessage());
         }
     }
 
     public static void listBorrowedBooks() {
-        List<Book> borrowedBooks = new ArrayList<>();
-        for (Book book : books) {
-            if (!book.isAvailable()) {
-                borrowedBooks.add(book);
+        String sql = "SELECT * FROM books WHERE is_available = 0";
+        try (Statement stmt = db.getConnection().createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            boolean hasBooks = false;
+            System.out.println("=== Livres empruntés ===");
+            while (rs.next()) {
+                hasBooks = true;
+                Book book = new Book(
+                    rs.getInt("id"),
+                    rs.getString("title"),
+                    rs.getString("author"),
+                    rs.getString("genre"),
+                    false
+                );
+                System.out.println(book);
             }
-        }
-        if (borrowedBooks.isEmpty()) {
-            System.out.println("Aucun livre emprunté.");
-            return;
-        }
-        System.out.println("=== Livres empruntés ===");
-        for (Book book : borrowedBooks) {
-            System.out.println(book);
+
+            if (!hasBooks) {
+                System.out.println("Aucun livre emprunté.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la récupération des livres : " + e.getMessage());
         }
     }
 
     public static void searchByTitle(String title) {
-        List<Book> results = new ArrayList<>();
-        for (Book book : books) {
-            if (book.getTitle().toLowerCase().contains(title.toLowerCase())) {
-                results.add(book);
+        String sql = "SELECT * FROM books WHERE title LIKE ?";
+        try (PreparedStatement pstmt = db.getConnection().prepareStatement(sql)) {
+            pstmt.setString(1, "%" + title + "%");
+            ResultSet rs = pstmt.executeQuery();
+
+            boolean hasResults = false;
+            System.out.println("=== Résultats de recherche (Titre) ===");
+            while (rs.next()) {
+                hasResults = true;
+                Book book = new Book(
+                    rs.getInt("id"),
+                    rs.getString("title"),
+                    rs.getString("author"),
+                    rs.getString("genre"),
+                    rs.getInt("is_available") == 1
+                );
+                System.out.println(book);
             }
-        }
-        if (results.isEmpty()) {
-            System.out.println("Aucun livre trouvé avec le titre : " + title);
-            return;
-        }
-        System.out.println("=== Résultats de recherche (Titre) ===");
-        for (Book book : results) {
-            System.out.println(book);
+
+            if (!hasResults) {
+                System.out.println("Aucun livre trouvé avec le titre : " + title);
+            }
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la recherche : " + e.getMessage());
         }
     }
 
     public static void searchByAuthor(String author) {
-        List<Book> results = new ArrayList<>();
-        for (Book book : books) {
-            if (book.getAuthor().toLowerCase().contains(author.toLowerCase())) {
-                results.add(book);
+        String sql = "SELECT * FROM books WHERE author LIKE ?";
+        try (PreparedStatement pstmt = db.getConnection().prepareStatement(sql)) {
+            pstmt.setString(1, "%" + author + "%");
+            ResultSet rs = pstmt.executeQuery();
+
+            boolean hasResults = false;
+            System.out.println("=== Résultats de recherche (Auteur) ===");
+            while (rs.next()) {
+                hasResults = true;
+                Book book = new Book(
+                    rs.getInt("id"),
+                    rs.getString("title"),
+                    rs.getString("author"),
+                    rs.getString("genre"),
+                    rs.getInt("is_available") == 1
+                );
+                System.out.println(book);
             }
-        }
-        if (results.isEmpty()) {
-            System.out.println("Aucun livre trouvé pour l'auteur : " + author);
-            return;
-        }
-        System.out.println("=== Résultats de recherche (Auteur) ===");
-        for (Book book : results) {
-            System.out.println(book);
+
+            if (!hasResults) {
+                System.out.println("Aucun livre trouvé pour l'auteur : " + author);
+            }
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la recherche : " + e.getMessage());
         }
     }
 
     public static void searchByGenre(String genre) {
-        List<Book> results = new ArrayList<>();
-        for (Book book : books) {
-            if (book.getGenre().toLowerCase().contains(genre.toLowerCase())) {
-                results.add(book);
-            }
-        }
-        if (results.isEmpty()) {
-            System.out.println("Aucun livre trouvé pour le genre : " + genre);
-            return;
-        }
-        System.out.println("=== Résultats de recherche (Genre) ===");
-        for (Book book : results) {
-            System.out.println(book);
-        }
-    }
+        String sql = "SELECT * FROM books WHERE genre LIKE ?";
+        try (PreparedStatement pstmt = db.getConnection().prepareStatement(sql)) {
+            pstmt.setString(1, "%" + genre + "%");
+            ResultSet rs = pstmt.executeQuery();
 
-    public static void clearAll() {
-        books.clear();
-        nextId = 1;
+            boolean hasResults = false;
+            System.out.println("=== Résultats de recherche (Genre) ===");
+            while (rs.next()) {
+                hasResults = true;
+                Book book = new Book(
+                    rs.getInt("id"),
+                    rs.getString("title"),
+                    rs.getString("author"),
+                    rs.getString("genre"),
+                    rs.getInt("is_available") == 1
+                );
+                System.out.println(book);
+            }
+
+            if (!hasResults) {
+                System.out.println("Aucun livre trouvé pour le genre : " + genre);
+            }
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la recherche : " + e.getMessage());
+        }
     }
 }

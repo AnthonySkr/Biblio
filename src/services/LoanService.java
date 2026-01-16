@@ -137,25 +137,6 @@ public class LoanService {
         }
     }
 
-    /**
-     * Obtient tous les emprunts
-     */
-    public static List<Loan> getAllLoans() {
-        return new ArrayList<>(loans);
-    }
-
-    /**
-     * Obtient un emprunt par son ID
-     */
-    public static Loan findById(int id) {
-        for (Loan loan : loans) {
-            if (loan.getId() == id) {
-                return loan;
-            }
-        }
-        return null;
-    }
-
     private static String getBookTitle(int bookId) {
         Book book = BookService.findById(bookId);
         return (book != null) ? book.getTitle() : "Livre #" + bookId;
@@ -164,10 +145,5 @@ public class LoanService {
     private static String getUserName(int userId) {
         User user = UserService.findById(userId);
         return (user != null) ? user.getName() : "Utilisateur #" + userId;
-    }
-
-    public static void clearAll() {
-        loans.clear();
-        nextId = 1;
     }
 }

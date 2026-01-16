@@ -1,6 +1,7 @@
 import services.BookService;
 import services.UserService;
 import services.LoanService;
+import database.DatabaseManager;
 
 import java.util.Scanner;
 
@@ -26,6 +27,7 @@ public class Main {
                 case "3" -> menuLoans();
                 case "0" -> {
                     running = false;
+                    DatabaseManager.getInstance().close();
                     System.out.println("Au revoir !");
                 }
                 default -> System.out.println("Choix invalide.");

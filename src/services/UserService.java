@@ -1,56 +1,89 @@
 package services;
 
+import database.DatabaseManager;
 import models.User;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.*;
 
 public class UserService {
 
-    private static final List<User> users = new ArrayList<>();
-    private static int nextId = 1;
+    private static final DatabaseManager db = DatabaseManager.getInstance();
 
     public static void addUser(String name) {
-        users.add(new User(nextId++, name));
-        System.out.println("Utilisateur ajouté.");
+        String sql = "INSERT INTO users (name) VALUES (?)";
+        try (PreparedStatement pstmt = db.getConnection().prepareStatement(sql)) {
+            pstmt.setString(1, name);
+            pstmt.executeUpdate();
+            System.out.println("Utilisateur ajouté.");
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de l'ajout de l'utilisateur : " + e.getMessage());
+        }
     }
 
     public static void updateUser(int id, String name) {
-        User user = findById(id);
-        if (user == null) {
+        if (findById(id) == null) {
             System.out.println("Utilisateur introuvable.");
             return;
         }
-        user.setName(name);
-        System.out.println("Utilisateur modifié.");
+
+        String sql = "UPDATE users SET name = ? WHERE id = ?";
+        try (PreparedStatement pstmt = db.getConnection().prepareStatement(sql)) {
+            pstmt.setString(1, name);
+            pstmt.setInt(2, id);
+            pstmt.executeUpdate();
+            System.out.println("Utilisateur modifié.");
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la modification de l'utilisateur : " + e.getMessage());
+        }
     }
 
     public static void deleteUser(int id) {
-        User user = findById(id);
-        if (user == null) {
+        if (findById(id) == null) {
             System.out.println("Utilisateur introuvable.");
             return;
         }
-        users.remove(user);
-        System.out.println("Utilisateur supprimé.");
+
+        String sql = "DELETE FROM users WHERE id = ?";
+        try (PreparedStatement pstmt = db.getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            pstmt.executeUpdate();
+            System.out.println("Utilisateur supprimé.");
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la suppression de l'utilisateur : " + e.getMessage());
+        }
     }
 
     public static void listUsers() {
-        if (users.isEmpty()) {
-            System.out.println("Aucun utilisateur.");
-            return;
+        String sql = "SELECT * FROM users";
+        try (Statement stmt = db.getConnection().createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            boolean hasUsers = false;
+            while (rs.next()) {
+                hasUsers = true;
+                User user = new User(rs.getInt("id"), rs.getString("name"));
+                System.out.println(user);
+            }
+
+            if (!hasUsers) {
+                System.out.println("Aucun utilisateur.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la récupération des utilisateurs : " + e.getMessage());
         }
-        users.forEach(System.out::println);
     }
 
     public static User findById(int id) {
-        return users.stream()
-                .filter(u -> u.getId() == id)
-                .findFirst()
-                .orElse(null);
-    }
+        String sql = "SELECT * FROM users WHERE id = ?";
+        try (PreparedStatement pstmt = db.getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            ResultSet rs = pstmt.executeQuery();
 
-    public static void clearAll() {
-        users.clear();
-        nextId = 1;
+            if (rs.next()) {
+                return new User(rs.getInt("id"), rs.getString("name"));
+            }
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la recherche de l'utilisateur : " + e.getMessage());
+        }
+        return null;
     }
 }
