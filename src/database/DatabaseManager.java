@@ -54,8 +54,7 @@ public class DatabaseManager {
         String sql = """
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                email TEXT UNIQUE NOT NULL
+                name TEXT NOT NULL
             )
             """;
         executeUpdate(sql, "Table users créée");

@@ -11,15 +11,6 @@
             </PendingDiffInfo>
           </value>
         </entry>
-        <entry key="$PROJECT_DIR$/src/models/User.java">
-          <value>
-            <PendingDiffInfo>
-              <option name="filePath" value="$PROJECT_DIR$/src/models/User.java" />
-              <option name="originalContent" value="package models;&#10;&#10;public class User {&#10;    private int id;&#10;    private String name;&#10;    private String email;&#10;&#10;    public User(int id, String name, String email) {&#10;        this.id = id;&#10;        this.name = name;&#10;        this.email = email;&#10;    }&#10;&#10;    // Getters&#10;    public int getId() { return id; }&#10;    public String getName() { return name; }&#10;    public String getEmail() { return email; }&#10;&#10;    // Setters&#10;    public void setName(String name) { this.name = name; }&#10;    public void setEmail(String email) { this.email = email; }&#10;&#10;    @Override&#10;    public String toString() {&#10;        return String.format(&quot;[%d] %s (%s)&quot;, id, name, email);&#10;    }&#10;}&#10;" />
-              <option name="updatedContent" value="package models;&#10;&#10;public class User {&#10;    private int id;&#10;    private String name;&#10;    private String email;&#10;&#10;    public User(int id, String name, String email) {&#10;        this.id = id;&#10;        this.name = name;&#10;        this.email = email;&#10;    }&#10;&#10;    // Getters&#10;    public int getId() { return id; }&#10;    public String getName() { return name; }&#10;    public String getEmail() { return email; }&#10;&#10;    // Setters&#10;    public void setName(String name) { this.name = name; }&#10;    public void setEmail(String email) { this.email = email; }&#10;&#10;    @Override&#10;    public String toString() {&#10;        return String.format(&quot;[%d] %s (%s)&quot;, id, name, email);&#10;    }&#10;}&#10;" />
-            </PendingDiffInfo>
-          </value>
-        </entry>
       </map>
     </option>
   </component>
