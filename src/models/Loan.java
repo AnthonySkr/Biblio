@@ -18,6 +18,11 @@ public class Loan {
     }
 
     public Loan(int bookId, int userId) {
+        this.id = 0; // Sera généré par la base de données ou le service
+        this.bookId = bookId;
+        this.userId = userId;
+        this.loanDate = LocalDate.now();
+        this.returnDate = null;
     }
 
     // Getters
@@ -28,6 +33,7 @@ public class Loan {
     public LocalDate getReturnDate() { return returnDate; }
 
     // Setters
+    public void setId(int id) { this.id = id; }
     public void setReturnDate(LocalDate returnDate) { this.returnDate = returnDate; }
 
     public boolean isReturned() {

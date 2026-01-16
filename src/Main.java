@@ -47,31 +47,49 @@ public class Main {
     }
 
     private static void menuUsers() {
-        System.out.println("\na - Ajouter | l - Lister | b - Retour");
+        System.out.println("\na - Ajouter | l - Lister | h - Historique emprunts | b - Retour");
         switch (scanner.nextLine()) {
             case "a" -> {
                 System.out.print("Nom : ");
                 UserService.addUser(scanner.nextLine());
             }
             case "l" -> UserService.listUsers();
+            case "h" -> {
+                System.out.print("ID Utilisateur : ");
+                try {
+                    int userId = Integer.parseInt(scanner.nextLine());
+                    LoanService.listLoansByUser(userId);
+                } catch (NumberFormatException e) {
+                    System.out.println("ID invalide. Veuillez entrer un nombre.");
+                }
+            }
         }
     }
 
     private static void menuLoans() {
-        System.out.println("\ne - Emprunter | r - Retourner | l - Lister");
+        System.out.println("\ne - Emprunter | r - Retourner | l - Lister tous | a - Emprunts actifs | b - Retour");
         switch (scanner.nextLine()) {
             case "e" -> {
-                System.out.print("ID Livre : ");
-                int bookId = Integer.parseInt(scanner.nextLine());
-                System.out.print("ID Utilisateur : ");
-                int userId = Integer.parseInt(scanner.nextLine());
-                LoanService.borrowBook(bookId, userId);
+                try {
+                    System.out.print("ID Livre : ");
+                    int bookId = Integer.parseInt(scanner.nextLine());
+                    System.out.print("ID Utilisateur : ");
+                    int userId = Integer.parseInt(scanner.nextLine());
+                    LoanService.borrowBook(bookId, userId);
+                } catch (NumberFormatException e) {
+                    System.out.println("Erreur : Veuillez entrer des nombres valides.");
+                }
             }
             case "r" -> {
-                System.out.print("ID Livre : ");
-                LoanService.returnBook(Integer.parseInt(scanner.nextLine()));
+                try {
+                    System.out.print("ID Livre : ");
+                    LoanService.returnBook(Integer.parseInt(scanner.nextLine()));
+                } catch (NumberFormatException e) {
+                    System.out.println("Erreur : Veuillez entrer un nombre valide.");
+                }
             }
             case "l" -> LoanService.listLoans();
+            case "a" -> LoanService.listActiveLoans();
         }
     }
 }

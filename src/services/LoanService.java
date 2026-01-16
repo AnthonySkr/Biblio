@@ -8,6 +8,7 @@ import java.util.List;
 public class LoanService {
 
     private static final List<Loan> loans = new ArrayList<>();
+    private static int nextId = 1;
 
     public static void borrowBook(int bookId, int userId) {
         Book book = BookService.findById(bookId);
@@ -23,7 +24,9 @@ public class LoanService {
         }
 
         book.setAvailable(false);
-        loans.add(new Loan(bookId, userId));
+        Loan loan = new Loan(bookId, userId);
+        loan.setId(nextId++);
+        loans.add(loan);
         System.out.println("Livre emprunté.");
     }
 
@@ -31,7 +34,10 @@ public class LoanService {
         for (Loan loan : loans) {
             if (loan.getBookId() == bookId && !loan.isReturned()) {
                 loan.returnBook();
-                BookService.findById(bookId).setAvailable(true);
+                Book book = BookService.findById(bookId);
+                if (book != null) {
+                    book.setAvailable(true);
+                }
                 System.out.println("Livre retourné.");
                 return;
             }
@@ -53,5 +59,76 @@ public class LoanService {
                             " | Retour: " + (loan.isReturned() ? loan.getReturnDate() : "Non rendu")
             );
         }
+    }
+
+    /**
+     * Affiche l'historique des emprunts d'un utilisateur
+     */
+    public static void listLoansByUser(int userId) {
+        List<Loan> userLoans = new ArrayList<>();
+        for (Loan loan : loans) {
+            if (loan.getUserId() == userId) {
+                userLoans.add(loan);
+            }
+        }
+
+        if (userLoans.isEmpty()) {
+            System.out.println("Aucun emprunt pour cet utilisateur.");
+            return;
+        }
+
+        System.out.println("\n=== Historique des emprunts de l'utilisateur #" + userId + " ===");
+        for (Loan loan : userLoans) {
+            System.out.println(
+                    "Livre ID: " + loan.getBookId() +
+                            " | Emprunt: " + loan.getLoanDate() +
+                            " | Retour: " + (loan.isReturned() ? loan.getReturnDate() : "Non rendu")
+            );
+        }
+    }
+
+    /**
+     * Liste uniquement les emprunts actifs
+     */
+    public static void listActiveLoans() {
+        List<Loan> activeLoans = new ArrayList<>();
+        for (Loan loan : loans) {
+            if (!loan.isReturned()) {
+                activeLoans.add(loan);
+            }
+        }
+
+        if (activeLoans.isEmpty()) {
+            System.out.println("Aucun emprunt actif.");
+            return;
+        }
+
+        System.out.println("\n=== Emprunts actifs ===");
+        for (Loan loan : activeLoans) {
+            System.out.println(
+                    "Livre ID: " + loan.getBookId() +
+                            " | Utilisateur ID: " + loan.getUserId() +
+                            " | Emprunté le: " + loan.getLoanDate()
+            );
+        }
+    }
+
+    /**
+     * Obtient tous les emprunts
+     */
+    public static List<Loan> getAllLoans() {
+        return new ArrayList<>(loans);
+    }
+
+    /**
+     * Obtient un emprunt par son ID
+     */
+    public static Loan findById(int id) {
+        for (Loan loan : loans) {
+            if (loan.getId() == id) {
+                return loan;
+            }
+        }
+        return null;
     }
 }
