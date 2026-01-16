@@ -1,16 +1,14 @@
 package services;
 
+import database.DatabaseManager;
 import models.Book;
-import models.Loan;
 import models.User;
+import java.sql.*;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 public class LoanService {
 
-    private static final List<Loan> loans = new ArrayList<>();
-    private static int nextId = 1;
+    private static final DatabaseManager db = DatabaseManager.getInstance();
 
     public static void borrowBook(int bookId, int userId) {
         Book book = BookService.findById(bookId);
@@ -31,52 +29,99 @@ public class LoanService {
             return;
         }
 
-        book.setAvailable(false);
-        Loan loan = new Loan(nextId++, bookId, userId, LocalDate.now(), null);
-        loans.add(loan);
-        System.out.println("Livre emprunté : \"" + book.getTitle() + "\" par " + user.getName() + ".");
+        // Enregistrer l'emprunt
+        String sql = "INSERT INTO loans (book_id, user_id, loan_date) VALUES (?, ?, ?)";
+        try (PreparedStatement pstmt = db.getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, bookId);
+            pstmt.setInt(2, userId);
+            pstmt.setString(3, LocalDate.now().toString());
+            pstmt.executeUpdate();
+
+            // Mettre à jour la disponibilité du livre
+            String updateBook = "UPDATE books SET is_available = 0 WHERE id = ?";
+            try (PreparedStatement updateStmt = db.getConnection().prepareStatement(updateBook)) {
+                updateStmt.setInt(1, bookId);
+                updateStmt.executeUpdate();
+            }
+
+            System.out.println("Livre emprunté : \"" + book.getTitle() + "\" par " + user.getName() + ".");
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de l'emprunt : " + e.getMessage());
+        }
     }
 
     public static void returnBook(int bookId) {
-        for (Loan loan : loans) {
-            if (loan.getBookId() == bookId && !loan.isReturned()) {
-                loan.returnBook();
+        // Trouver l'emprunt actif pour ce livre
+        String findLoan = "SELECT * FROM loans WHERE book_id = ? AND return_date IS NULL";
+        try (PreparedStatement pstmt = db.getConnection().prepareStatement(findLoan)) {
+            pstmt.setInt(1, bookId);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                int loanId = rs.getInt("id");
+
+                // Mettre à jour la date de retour
+                String updateLoan = "UPDATE loans SET return_date = ? WHERE id = ?";
+                try (PreparedStatement updateStmt = db.getConnection().prepareStatement(updateLoan)) {
+                    updateStmt.setString(1, LocalDate.now().toString());
+                    updateStmt.setInt(2, loanId);
+                    updateStmt.executeUpdate();
+                }
+
+                // Mettre à jour la disponibilité du livre
+                String updateBook = "UPDATE books SET is_available = 1 WHERE id = ?";
+                try (PreparedStatement updateStmt = db.getConnection().prepareStatement(updateBook)) {
+                    updateStmt.setInt(1, bookId);
+                    updateStmt.executeUpdate();
+                }
+
                 Book book = BookService.findById(bookId);
                 if (book != null) {
-                    book.setAvailable(true);
                     System.out.println("Livre retourné : \"" + book.getTitle() + "\".");
                 } else {
                     System.out.println("Livre retourné.");
                 }
-                return;
+            } else {
+                System.out.println("Aucun emprunt actif pour ce livre.");
             }
+        } catch (SQLException e) {
+            System.out.println("Erreur lors du retour : " + e.getMessage());
         }
-        System.out.println("Aucun emprunt actif pour ce livre.");
     }
 
     public static void listLoans() {
-        if (loans.isEmpty()) {
-            System.out.println("Aucun emprunt.");
-            return;
-        }
+        String sql = "SELECT * FROM loans";
+        try (Statement stmt = db.getConnection().createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
 
-        System.out.println("\n=== Tous les emprunts ===");
-        for (Loan loan : loans) {
-            String bookTitle = getBookTitle(loan.getBookId());
-            String userName = getUserName(loan.getUserId());
+            boolean hasLoans = false;
+            System.out.println("\n=== Tous les emprunts ===");
+            while (rs.next()) {
+                hasLoans = true;
+                int bookId = rs.getInt("book_id");
+                int userId = rs.getInt("user_id");
+                String loanDate = rs.getString("loan_date");
+                String returnDate = rs.getString("return_date");
 
-            System.out.println(
-                    "Livre: \"" + bookTitle + "\" | " +
-                    "Utilisateur: " + userName + " | " +
-                    "Emprunt: " + loan.getLoanDate() + " | " +
-                    "Retour: " + (loan.isReturned() ? loan.getReturnDate() : "Non rendu")
-            );
+                String bookTitle = getBookTitle(bookId);
+                String userName = getUserName(userId);
+
+                System.out.println(
+                        "Livre: \"" + bookTitle + "\" | " +
+                        "Utilisateur: " + userName + " | " +
+                        "Emprunt: " + loanDate + " | " +
+                        "Retour: " + (returnDate != null ? returnDate : "Non rendu")
+                );
+            }
+
+            if (!hasLoans) {
+                System.out.println("Aucun emprunt.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la récupération des emprunts : " + e.getMessage());
         }
     }
 
-    /**
-     * Affiche l'historique des emprunts d'un utilisateur
-     */
     public static void listLoansByUser(int userId) {
         User user = UserService.findById(userId);
         if (user == null) {
@@ -84,56 +129,64 @@ public class LoanService {
             return;
         }
 
-        List<Loan> userLoans = new ArrayList<>();
-        for (Loan loan : loans) {
-            if (loan.getUserId() == userId) {
-                userLoans.add(loan);
+        String sql = "SELECT * FROM loans WHERE user_id = ?";
+        try (PreparedStatement pstmt = db.getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, userId);
+            ResultSet rs = pstmt.executeQuery();
+
+            boolean hasLoans = false;
+            System.out.println("\n=== Historique des emprunts de " + user.getName() + " ===");
+            while (rs.next()) {
+                hasLoans = true;
+                int bookId = rs.getInt("book_id");
+                String loanDate = rs.getString("loan_date");
+                String returnDate = rs.getString("return_date");
+
+                String bookTitle = getBookTitle(bookId);
+
+                System.out.println(
+                        "Livre: \"" + bookTitle + "\" | " +
+                        "Emprunt: " + loanDate + " | " +
+                        "Retour: " + (returnDate != null ? returnDate : "Non rendu")
+                );
             }
-        }
 
-        if (userLoans.isEmpty()) {
-            System.out.println("Aucun emprunt pour cet utilisateur.");
-            return;
-        }
-
-        System.out.println("\n=== Historique des emprunts de " + user.getName() + " ===");
-        for (Loan loan : userLoans) {
-            String bookTitle = getBookTitle(loan.getBookId());
-
-            System.out.println(
-                    "Livre: \"" + bookTitle + "\" | " +
-                    "Emprunt: " + loan.getLoanDate() + " | " +
-                    "Retour: " + (loan.isReturned() ? loan.getReturnDate() : "Non rendu")
-            );
+            if (!hasLoans) {
+                System.out.println("Aucun emprunt pour cet utilisateur.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la récupération des emprunts : " + e.getMessage());
         }
     }
 
-    /**
-     * Liste uniquement les emprunts actifs
-     */
     public static void listActiveLoans() {
-        List<Loan> activeLoans = new ArrayList<>();
-        for (Loan loan : loans) {
-            if (!loan.isReturned()) {
-                activeLoans.add(loan);
+        String sql = "SELECT * FROM loans WHERE return_date IS NULL";
+        try (Statement stmt = db.getConnection().createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            boolean hasLoans = false;
+            System.out.println("\n=== Emprunts actifs ===");
+            while (rs.next()) {
+                hasLoans = true;
+                int bookId = rs.getInt("book_id");
+                int userId = rs.getInt("user_id");
+                String loanDate = rs.getString("loan_date");
+
+                String bookTitle = getBookTitle(bookId);
+                String userName = getUserName(userId);
+
+                System.out.println(
+                        "Livre: \"" + bookTitle + "\" | " +
+                        "Utilisateur: " + userName + " | " +
+                        "Emprunté le: " + loanDate
+                );
             }
-        }
 
-        if (activeLoans.isEmpty()) {
-            System.out.println("Aucun emprunt actif.");
-            return;
-        }
-
-        System.out.println("\n=== Emprunts actifs ===");
-        for (Loan loan : activeLoans) {
-            String bookTitle = getBookTitle(loan.getBookId());
-            String userName = getUserName(loan.getUserId());
-
-            System.out.println(
-                    "Livre: \"" + bookTitle + "\" | " +
-                    "Utilisateur: " + userName + " | " +
-                    "Emprunté le: " + loan.getLoanDate()
-            );
+            if (!hasLoans) {
+                System.out.println("Aucun emprunt actif.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la récupération des emprunts actifs : " + e.getMessage());
         }
     }
 
