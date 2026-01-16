@@ -2,7 +2,6 @@ import services.BookService;
 import services.UserService;
 import services.LoanService;
 import database.DatabaseManager;
-
 import java.util.Scanner;
 
 public class Main {
