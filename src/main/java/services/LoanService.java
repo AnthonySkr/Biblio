@@ -108,9 +108,9 @@ public class LoanService {
 
                 System.out.println(
                         "Livre: \"" + bookTitle + "\" | " +
-                        "Utilisateur: " + userName + " | " +
-                        "Emprunt: " + loanDate + " | " +
-                        "Retour: " + (returnDate != null ? returnDate : "Non rendu")
+                                "Utilisateur: " + userName + " | " +
+                                "Emprunt: " + loanDate + " | " +
+                                "Retour: " + (returnDate != null ? returnDate : "Non rendu")
                 );
             }
 
@@ -146,8 +146,8 @@ public class LoanService {
 
                 System.out.println(
                         "Livre: \"" + bookTitle + "\" | " +
-                        "Emprunt: " + loanDate + " | " +
-                        "Retour: " + (returnDate != null ? returnDate : "Non rendu")
+                                "Emprunt: " + loanDate + " | " +
+                                "Retour: " + (returnDate != null ? returnDate : "Non rendu")
                 );
             }
 
@@ -177,8 +177,8 @@ public class LoanService {
 
                 System.out.println(
                         "Livre: \"" + bookTitle + "\" | " +
-                        "Utilisateur: " + userName + " | " +
-                        "Emprunté le: " + loanDate
+                                "Utilisateur: " + userName + " | " +
+                                "Emprunté le: " + loanDate
                 );
             }
 

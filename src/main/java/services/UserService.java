@@ -8,15 +8,23 @@ public class UserService {
 
     private static final DatabaseManager db = DatabaseManager.getInstance();
 
-    public static void addUser(String name) {
+    public static int addUser(String name) {
         String sql = "INSERT INTO users (name) VALUES (?)";
-        try (PreparedStatement pstmt = db.getConnection().prepareStatement(sql)) {
+        try (PreparedStatement pstmt = db.getConnection().prepareStatement(
+                sql, Statement.RETURN_GENERATED_KEYS)) {
+
             pstmt.setString(1, name);
             pstmt.executeUpdate();
-            System.out.println("Utilisateur ajouté.");
+
+            ResultSet rs = pstmt.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
         } catch (SQLException e) {
             System.out.println("Erreur lors de l'ajout de l'utilisateur : " + e.getMessage());
         }
+        return -1;
     }
 
     public static void updateUser(int id, String name) {

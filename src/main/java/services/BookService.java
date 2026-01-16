@@ -8,17 +8,25 @@ public class BookService {
 
     private static final DatabaseManager db = DatabaseManager.getInstance();
 
-    public static void addBook(String title, String author, String genre) {
+    public static int addBook(String title, String author, String genre) {
         String sql = "INSERT INTO books (title, author, genre, is_available) VALUES (?, ?, ?, 1)";
-        try (PreparedStatement pstmt = db.getConnection().prepareStatement(sql)) {
+        try (PreparedStatement pstmt = db.getConnection().prepareStatement(
+                sql, Statement.RETURN_GENERATED_KEYS)) {
+
             pstmt.setString(1, title);
             pstmt.setString(2, author);
             pstmt.setString(3, genre);
             pstmt.executeUpdate();
-            System.out.println("Livre ajouté.");
+
+            ResultSet rs = pstmt.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
         } catch (SQLException e) {
             System.out.println("Erreur lors de l'ajout du livre : " + e.getMessage());
         }
+        return -1;
     }
 
     public static void listBooks() {
@@ -30,11 +38,11 @@ public class BookService {
             while (rs.next()) {
                 hasBooks = true;
                 Book book = new Book(
-                    rs.getInt("id"),
-                    rs.getString("title"),
-                    rs.getString("author"),
-                    rs.getString("genre"),
-                    rs.getInt("is_available") == 1
+                        rs.getInt("id"),
+                        rs.getString("title"),
+                        rs.getString("author"),
+                        rs.getString("genre"),
+                        rs.getInt("is_available") == 1
                 );
                 System.out.println(book);
             }
@@ -55,11 +63,11 @@ public class BookService {
 
             if (rs.next()) {
                 return new Book(
-                    rs.getInt("id"),
-                    rs.getString("title"),
-                    rs.getString("author"),
-                    rs.getString("genre"),
-                    rs.getInt("is_available") == 1
+                        rs.getInt("id"),
+                        rs.getString("title"),
+                        rs.getString("author"),
+                        rs.getString("genre"),
+                        rs.getInt("is_available") == 1
                 );
             }
         } catch (SQLException e) {
@@ -118,11 +126,11 @@ public class BookService {
             while (rs.next()) {
                 hasBooks = true;
                 Book book = new Book(
-                    rs.getInt("id"),
-                    rs.getString("title"),
-                    rs.getString("author"),
-                    rs.getString("genre"),
-                    true
+                        rs.getInt("id"),
+                        rs.getString("title"),
+                        rs.getString("author"),
+                        rs.getString("genre"),
+                        true
                 );
                 System.out.println(book);
             }
@@ -145,11 +153,11 @@ public class BookService {
             while (rs.next()) {
                 hasBooks = true;
                 Book book = new Book(
-                    rs.getInt("id"),
-                    rs.getString("title"),
-                    rs.getString("author"),
-                    rs.getString("genre"),
-                    false
+                        rs.getInt("id"),
+                        rs.getString("title"),
+                        rs.getString("author"),
+                        rs.getString("genre"),
+                        false
                 );
                 System.out.println(book);
             }
@@ -173,11 +181,11 @@ public class BookService {
             while (rs.next()) {
                 hasResults = true;
                 Book book = new Book(
-                    rs.getInt("id"),
-                    rs.getString("title"),
-                    rs.getString("author"),
-                    rs.getString("genre"),
-                    rs.getInt("is_available") == 1
+                        rs.getInt("id"),
+                        rs.getString("title"),
+                        rs.getString("author"),
+                        rs.getString("genre"),
+                        rs.getInt("is_available") == 1
                 );
                 System.out.println(book);
             }
@@ -201,11 +209,11 @@ public class BookService {
             while (rs.next()) {
                 hasResults = true;
                 Book book = new Book(
-                    rs.getInt("id"),
-                    rs.getString("title"),
-                    rs.getString("author"),
-                    rs.getString("genre"),
-                    rs.getInt("is_available") == 1
+                        rs.getInt("id"),
+                        rs.getString("title"),
+                        rs.getString("author"),
+                        rs.getString("genre"),
+                        rs.getInt("is_available") == 1
                 );
                 System.out.println(book);
             }
@@ -229,11 +237,11 @@ public class BookService {
             while (rs.next()) {
                 hasResults = true;
                 Book book = new Book(
-                    rs.getInt("id"),
-                    rs.getString("title"),
-                    rs.getString("author"),
-                    rs.getString("genre"),
-                    rs.getInt("is_available") == 1
+                        rs.getInt("id"),
+                        rs.getString("title"),
+                        rs.getString("author"),
+                        rs.getString("genre"),
+                        rs.getInt("is_available") == 1
                 );
                 System.out.println(book);
             }
