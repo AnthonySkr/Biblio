@@ -10,8 +10,28 @@ public class UserService {
     private static int nextId = 1;
 
     public static void addUser(String name) {
-        users.add(new User(nextId++, name, name.toLowerCase().replaceAll(" ", ".") + "@example.com"));
+        users.add(new User(nextId++, name));
         System.out.println("Utilisateur ajouté.");
+    }
+
+    public static void updateUser(int id, String name) {
+        User user = findById(id);
+        if (user == null) {
+            System.out.println("Utilisateur introuvable.");
+            return;
+        }
+        user.setName(name);
+        System.out.println("Utilisateur modifié.");
+    }
+
+    public static void deleteUser(int id) {
+        User user = findById(id);
+        if (user == null) {
+            System.out.println("Utilisateur introuvable.");
+            return;
+        }
+        users.remove(user);
+        System.out.println("Utilisateur supprimé.");
     }
 
     public static void listUsers() {

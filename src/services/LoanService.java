@@ -2,6 +2,7 @@ package services;
 
 import models.Book;
 import models.Loan;
+import models.User;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,9 +14,15 @@ public class LoanService {
 
     public static void borrowBook(int bookId, int userId) {
         Book book = BookService.findById(bookId);
+        User user = UserService.findById(userId);
 
         if (book == null) {
             System.out.println("Livre introuvable.");
+            return;
+        }
+
+        if (user == null) {
+            System.out.println("Utilisateur introuvable.");
             return;
         }
 
@@ -27,7 +34,7 @@ public class LoanService {
         book.setAvailable(false);
         Loan loan = new Loan(nextId++, bookId, userId, LocalDate.now(), null);
         loans.add(loan);
-        System.out.println("Livre emprunté.");
+        System.out.println("Livre emprunté : \"" + book.getTitle() + "\" par " + user.getName() + ".");
     }
 
     public static void returnBook(int bookId) {
@@ -37,8 +44,10 @@ public class LoanService {
                 Book book = BookService.findById(bookId);
                 if (book != null) {
                     book.setAvailable(true);
+                    System.out.println("Livre retourné : \"" + book.getTitle() + "\".");
+                } else {
+                    System.out.println("Livre retourné.");
                 }
-                System.out.println("Livre retourné.");
                 return;
             }
         }
@@ -51,12 +60,16 @@ public class LoanService {
             return;
         }
 
+        System.out.println("\n=== Tous les emprunts ===");
         for (Loan loan : loans) {
+            String bookTitle = getBookTitle(loan.getBookId());
+            String userName = getUserName(loan.getUserId());
+
             System.out.println(
-                    "Livre ID: " + loan.getBookId() +
-                            " | Utilisateur ID: " + loan.getUserId() +
-                            " | Emprunt: " + loan.getLoanDate() +
-                            " | Retour: " + (loan.isReturned() ? loan.getReturnDate() : "Non rendu")
+                    "Livre: \"" + bookTitle + "\" | " +
+                    "Utilisateur: " + userName + " | " +
+                    "Emprunt: " + loan.getLoanDate() + " | " +
+                    "Retour: " + (loan.isReturned() ? loan.getReturnDate() : "Non rendu")
             );
         }
     }
@@ -65,6 +78,12 @@ public class LoanService {
      * Affiche l'historique des emprunts d'un utilisateur
      */
     public static void listLoansByUser(int userId) {
+        User user = UserService.findById(userId);
+        if (user == null) {
+            System.out.println("Utilisateur introuvable.");
+            return;
+        }
+
         List<Loan> userLoans = new ArrayList<>();
         for (Loan loan : loans) {
             if (loan.getUserId() == userId) {
@@ -77,12 +96,14 @@ public class LoanService {
             return;
         }
 
-        System.out.println("\n=== Historique des emprunts de l'utilisateur #" + userId + " ===");
+        System.out.println("\n=== Historique des emprunts de " + user.getName() + " ===");
         for (Loan loan : userLoans) {
+            String bookTitle = getBookTitle(loan.getBookId());
+
             System.out.println(
-                    "Livre ID: " + loan.getBookId() +
-                            " | Emprunt: " + loan.getLoanDate() +
-                            " | Retour: " + (loan.isReturned() ? loan.getReturnDate() : "Non rendu")
+                    "Livre: \"" + bookTitle + "\" | " +
+                    "Emprunt: " + loan.getLoanDate() + " | " +
+                    "Retour: " + (loan.isReturned() ? loan.getReturnDate() : "Non rendu")
             );
         }
     }
@@ -105,10 +126,13 @@ public class LoanService {
 
         System.out.println("\n=== Emprunts actifs ===");
         for (Loan loan : activeLoans) {
+            String bookTitle = getBookTitle(loan.getBookId());
+            String userName = getUserName(loan.getUserId());
+
             System.out.println(
-                    "Livre ID: " + loan.getBookId() +
-                            " | Utilisateur ID: " + loan.getUserId() +
-                            " | Emprunté le: " + loan.getLoanDate()
+                    "Livre: \"" + bookTitle + "\" | " +
+                    "Utilisateur: " + userName + " | " +
+                    "Emprunté le: " + loan.getLoanDate()
             );
         }
     }
@@ -130,5 +154,15 @@ public class LoanService {
             }
         }
         return null;
+    }
+
+    private static String getBookTitle(int bookId) {
+        Book book = BookService.findById(bookId);
+        return (book != null) ? book.getTitle() : "Livre #" + bookId;
+    }
+
+    private static String getUserName(int userId) {
+        User user = UserService.findById(userId);
+        return (user != null) ? user.getName() : "Utilisateur #" + userId;
     }
 }
