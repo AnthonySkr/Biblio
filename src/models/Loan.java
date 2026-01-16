@@ -3,26 +3,18 @@ package models;
 import java.time.LocalDate;
 
 public class Loan {
-    private int id;
-    private int bookId;
-    private int userId;
-    private LocalDate loanDate;
+    private final int id;
+    private final int bookId;
+    private final int userId;
+    private final LocalDate loanDate;
     private LocalDate returnDate;
 
-    public Loan(int id, int bookId, int userId, LocalDate loanDate) {
+    public Loan(int id, int bookId, int userId, LocalDate loanDate, LocalDate returnDate) {
         this.id = id;
         this.bookId = bookId;
         this.userId = userId;
         this.loanDate = loanDate;
-        this.returnDate = null;
-    }
-
-    public Loan(int bookId, int userId) {
-        this.id = 0; // Sera généré par la base de données ou le service
-        this.bookId = bookId;
-        this.userId = userId;
-        this.loanDate = LocalDate.now();
-        this.returnDate = null;
+        this.returnDate = returnDate;
     }
 
     // Getters
@@ -33,7 +25,6 @@ public class Loan {
     public LocalDate getReturnDate() { return returnDate; }
 
     // Setters
-    public void setId(int id) { this.id = id; }
     public void setReturnDate(LocalDate returnDate) { this.returnDate = returnDate; }
 
     public boolean isReturned() {

@@ -2,6 +2,7 @@ package services;
 
 import models.Book;
 import models.Loan;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,8 +25,7 @@ public class LoanService {
         }
 
         book.setAvailable(false);
-        Loan loan = new Loan(bookId, userId);
-        loan.setId(nextId++);
+        Loan loan = new Loan(nextId++, bookId, userId, LocalDate.now(), null);
         loans.add(loan);
         System.out.println("Livre emprunté.");
     }
