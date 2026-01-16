@@ -7,12 +7,17 @@ public class Book {
     private String genre;
     private boolean isAvailable;
 
-    public Book(int id, String title, String author, String genre, boolean b) {
+    public Book(int id, String title, String author, String genre, boolean isAvailable) {
         this.id = id;
         this.title = title;
         this.author = author;
         this.genre = genre;
-        this.isAvailable = true;
+        this.isAvailable = isAvailable;
+    }
+
+    // Constructeur simplifié pour les nouveaux livres
+    public Book(int id, String title, String author, String genre) {
+        this(id, title, author, genre, true);
     }
 
     // Getters

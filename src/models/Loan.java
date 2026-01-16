@@ -42,5 +42,6 @@ public class Loan {
     }
 
     public void returnBook() {
+        this.returnDate = LocalDate.now();
     }
 }
