@@ -165,4 +165,9 @@ public class LoanService {
         User user = UserService.findById(userId);
         return (user != null) ? user.getName() : "Utilisateur #" + userId;
     }
+
+    public static void clearAll() {
+        loans.clear();
+        nextId = 1;
+    }
 }

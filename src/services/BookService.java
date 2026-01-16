@@ -144,4 +144,9 @@ public class BookService {
             System.out.println(book);
         }
     }
+
+    public static void clearAll() {
+        books.clear();
+        nextId = 1;
+    }
 }

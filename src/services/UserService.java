@@ -48,4 +48,9 @@ public class UserService {
                 .findFirst()
                 .orElse(null);
     }
+
+    public static void clearAll() {
+        users.clear();
+        nextId = 1;
+    }
 }
